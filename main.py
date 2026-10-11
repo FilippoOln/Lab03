@@ -14,13 +14,13 @@ def menu():
 
 def main():
     deposito = DepositoStrumenti("Deposito Strumenti Civico", "Alessandro Visconti")
-
     while True:
         scelta = menu()
 
         if scelta == "1":
             nuovo_responsabile = input("Inserisci il nuovo responsabile: ")
-            # TODO: Aggiorna responsabile nel sistema
+            deposito.responsabile = nuovo_responsabile
+            print(f"Nuovo responsabile del deposito: {deposito.responsabile}")
 
         elif scelta == "2":
             while True:
