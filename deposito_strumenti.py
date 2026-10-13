@@ -55,6 +55,7 @@ class DepositoStrumenti:
             #vado a recuperare il codice dell'ultimo strumento presente nella lista strumenti gestiti dal deposito
             #estraggo da esso il numero intero progressivo e ci sommo 1 per ottener il nuovo num intero progressivo
             ultimo_strumento = self.__strumentiGestiti[-1]
+            #ho assunto che gli strumenti caricati dal file fossero già in ordine di codice progressivo
             ultimo_codice = ultimo_strumento.codice
             num_progressivo = int(ultimo_codice[1:]) + 1
         nuovo_codice = carattere + str(num_progressivo)
@@ -71,15 +72,17 @@ class DepositoStrumenti:
 
     def nuovo_prestito(self, data, id_strumento, cognome_allievo):
         """Crea un nuovo prestito"""
-        for prestito in self.__prestitiAttuali:
-            if prestito.id_strumento == id_strumento:
-                raise Exception(f"Lo strumento {id_strumento} è già in prestito ad un altro allievo")
         #verifico se lo strumento è presente nella lista strumenti gestiti dal deposito
         trovato = False
         for strumento in self.__strumentiGestiti:
             if strumento.codice == id_strumento:
                 trovato = True
-                break
+                if strumento.disponibile == False:
+                    raise Exception(f"Lo strumento {id_strumento} è già in prestito ad un altro allievo")
+                #altrimenti lo strumento ora vien dato in prestito quindi divien non disponibile
+                else:
+                    strumento.disponibile = False
+                    break
         if not trovato:
             raise Exception(f"Lo strumento {id_strumento} non è disponibile nel deposito")
 
@@ -92,6 +95,7 @@ class DepositoStrumenti:
             num_progressivo = int(ultimo_codice[1:]) + 1
         nuovo_codice = carattere + str(num_progressivo)
         nuovo_p = Prestito(nuovo_codice, data, id_strumento, cognome_allievo)
+
         #aggiungo il nuovo prestito in fondo alla lista dei prestiti in corso effettuati dal deposito
         self.__prestitiAttuali.append(nuovo_p)
         return nuovo_p
@@ -100,11 +104,17 @@ class DepositoStrumenti:
     def termina_prestito(self, id_prestito):
         """Termina un prestito in atto"""
         trovato = False
-        for (indice,element) in enumerate(self.__prestitiAttuali):
-            if element.id_prestito == id_prestito:
+        for (indice,prestito) in enumerate(self.__prestitiAttuali):
+            if prestito.id_prestito == id_prestito:
                 trovato = True
                 #rimuovo dalla lista dei prestiti in corso effettuati dal deposito il prestito da terminare
+                #e setto il valor True all'attributo dispoonibile dello strumento
+                # presente nel sistema e associato a quel prestito
+                for strumento in self.__strumentiGestiti:
+                    if strumento.codice == prestito.id_strumento:
+                        strumento.disponibile = True
                 self.__prestitiAttuali.pop(indice)
                 break
+
         if not trovato:
             raise Exception(f"Non è in corso nessun prestito col codice {id_prestito}")
